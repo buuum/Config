@@ -1,7 +1,7 @@
 A simple config loader for PHP
 ==============================
 
-[![Packagist](https://img.shields.io/packagist/v/buuum/config)](https://packagist.org/packages/buuum/config)
+[![Packagist](https://img.shields.io/packagist/v/buuum/config.svg)](https://packagist.org/packages/buuum/config)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](#license)
 
 ## Install
