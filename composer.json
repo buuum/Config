@@ -1,0 +1,24 @@
+{
+  "name": "buuum/config",
+  "type": "library",
+  "description": "A simple config loader for PHP",
+  "homepage": "https://github.com/buuum/Config",
+  "keywords": [
+    "config"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Alfons Martinez",
+      "email": "alfonsmartinezparra@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Buuum\\": "src/Config"
+    }
+  },
+  "require": {
+    "php": ">=5.5.0"
+  }
+}
