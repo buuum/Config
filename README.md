@@ -65,6 +65,7 @@ $config = new Config($configs, $autoloads);
 
 ## Get config values with dot notation
 ```php
+
 $config->get('environment');
 // return local
 $config->get('local.host');
@@ -73,6 +74,7 @@ $config->get('local.bbddd');
 // return array
 $config->get('local.bbdd.database);
 // return database_name
+
 ```
 
 ##  parse errors
@@ -114,12 +116,11 @@ class HandleError implements HandleErrorInterface
     }
 }
 
+$handle = new HandleError(true, __DIR__);
 $config->setupErrors($handle);
 ```
-if debugMode is true show errors 
-if debugMode is false parseErro is called
-
-
+* if debugMode is true show errors 
+* if debugMode is false parseErro is called
 
 ## LICENSE
 
