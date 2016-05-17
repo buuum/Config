@@ -121,7 +121,7 @@ class Config
         foreach ($this->autoloads['psr-4'] as $key => $dir) {
             if (substr($classname, 0, strlen($key)) == $key) {
                 $name = substr($classname, strlen($key));
-                require_once $dir . '/' . $name . ".php";
+                require_once $dir . '/' . str_replace('\\', '/', $name) . ".php";
                 return;
             }
         }
