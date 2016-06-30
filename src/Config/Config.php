@@ -22,7 +22,7 @@ class Config
 
     public function get($name)
     {
-        if (!empty($this->configs[$name])) {
+        if (isset($this->configs[$name])) {
             return $this->configs[$name];
         } elseif (strpos($name, '.') !== false) {
             $loc = &$this->configs;
