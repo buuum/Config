@@ -25,6 +25,12 @@ class Config
         if (isset($this->configs[$name])) {
             return $this->configs[$name];
         } elseif (strpos($name, '.') !== false) {
+
+            if (substr($name, 0, strlen('environment.')) == 'environment.') {
+                $name = str_replace('environment.', 'environments.' . $this->get('environment') . '.', $name);
+                return $this->get($name);
+            }
+
             $loc = &$this->configs;
             foreach (explode('.', $name) as $part) {
                 $loc = &$loc[$part];
@@ -100,6 +106,7 @@ class Config
 
             $this->handleError->parseError($errortypes[$error['type']], $error['type'], $error['message'],
                 $error['file'], $error['line']);
+
         }
     }
 
