@@ -3,15 +3,27 @@ namespace Buuum;
 
 class Config
 {
-    private $configs = [];
     /**
-     * @var HandleErrorInterface
+     * @var array
      */
-    private $handleError;
+    private $configs = [];
 
+    /**
+     * @var mixed
+     */
     private $autoloads;
 
-    public function __construct($configs, $autoloads = false)
+    /**
+     * @var mixed
+     */
+    private $callback = false;
+
+    /**
+     * Config constructor.
+     * @param array $configs
+     * @param bool $autoloads
+     */
+    public function __construct(array $configs, $autoloads = false)
     {
         $this->configs = $configs;
         if ($autoloads) {
@@ -20,17 +32,15 @@ class Config
         }
     }
 
+    /**
+     * @param $name
+     * @return array|bool|mixed
+     */
     public function get($name)
     {
         if (isset($this->configs[$name])) {
             return $this->configs[$name];
         } elseif (strpos($name, '.') !== false) {
-
-            if (substr($name, 0, strlen('environment.')) == 'environment.') {
-                $name = str_replace('environment.', 'environments.' . $this->get('environment') . '.', $name);
-                return $this->get($name);
-            }
-
             $loc = &$this->configs;
             foreach (explode('.', $name) as $part) {
                 $loc = &$loc[$part];
@@ -40,25 +50,40 @@ class Config
         return false;
     }
 
+    /**
+     * @param $name
+     * @param $value
+     */
     public function set($name, $value)
     {
         $this->configs[$name] = $value;
     }
 
-    public function setupErrors(HandleErrorInterface $handleError)
+    /**
+     * @param callable $callback
+     * @param bool $dev
+     */
+    public function setupErrors(callable $callback, $dev = true)
     {
-        $this->handleError = $handleError;
-        if (!$this->handleError->getDebugMode()) {
+        $this->callback = $callback;
+        if (!$dev) {
             set_error_handler(array($this, "handleErrors"));
             register_shutdown_function(array($this, "shutdownFunction"));
         }
 
-        $display_errors = $this->handleError->getDebugMode() ? "1" : "0";
+        $display_errors = $dev ? "1" : "0";
         error_reporting(E_ALL | E_STRICT);
         ini_set('display_errors', $display_errors);
         ini_set('html_errors', $display_errors);
     }
 
+    /**
+     * @param $errno
+     * @param $errmsg
+     * @param $filename
+     * @param $linenum
+     * @return bool
+     */
     public function handleErrors($errno, $errmsg, $filename, $linenum)
     {
         if (0 == error_reporting()) {
@@ -78,18 +103,21 @@ class Config
             E_USER_WARNING      => 'User Warning',
             E_USER_NOTICE       => 'User Notice',
             E_STRICT            => 'Runtime Notice',
-            E_RECOVERABLE_ERROR => 'Catchable Fatal Error',
-            E_DEPRECATED        => 'Deprecated',
-            E_USER_DEPRECATED   => 'User Deprecated'
+            E_RECOVERABLE_ERROR => 'Catchable Fatal Error'
         );
 
         $errtype = (isset($errortype[$errno])) ? $errortype[$errno] : 'Unknow';
 
-        $this->handleError->parseError($errtype, $errno, $errmsg, $filename, $linenum);
+        $fn = $this->callback;
+        $fn($errtype, $errno, $errmsg, $filename, $linenum);
+
 
         return true;
     }
 
+    /**
+     *
+     */
     public function shutdownFunction()
     {
         $error = error_get_last();
@@ -106,12 +134,14 @@ class Config
                 E_COMPILE_ERROR => 'Fatal error (Compile Error)'
             );
 
-            $this->handleError->parseError($errortypes[$error['type']], $error['type'], $error['message'],
-                $error['file'], $error['line']);
-
+            $fn = $this->callback;
+            $fn($errortypes[$error['type']], $error['type'], $error['message'], $error['file'], $error['line']);
         }
     }
 
+    /**
+     *
+     */
     private function setAutoloads()
     {
         if (!empty($this->autoloads['files'])) {
@@ -124,6 +154,9 @@ class Config
         }
     }
 
+    /**
+     * @param $classname
+     */
     private function load($classname)
     {
 

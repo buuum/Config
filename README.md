@@ -81,43 +81,35 @@ $config->get('local.bbdd.database);
 You need handleErrorInterface for parse Errors
 Ex:
 ```php
-class HandleError implements HandleErrorInterface
+$config->setupErrors($parseError, true);
+
+$parseError = function($errtype, $errno, $errmsg, $filename, $linenum)
 {
 
-    private $logPath;
-    private $debugMode;
+    $err = "<errorentry>\n";
+    $err .= "\t<datetime>" . date("Y-m-d H:i:s (T)") . "</datetime>\n";
+    $err .= "\t<errornum>" . $errno . "</errornum>\n";
+    $err .= "\t<errortype>" . $errtype . "</errortype>\n";
+    $err .= "\t<errormsg>" . $errmsg . "</errormsg>\n";
+    $err .= "\t<scriptname>" . $filename . "</scriptname>\n";
+    $err .= "\t<scriptlinenum>" . $linenum . "</scriptlinenum>\n";
 
-    public function __construct($debugmode, $logPath = null)
-    {
-        $this->logPath = $logPath;
-        $this->debugMode = $debugmode;
+    $err .= "</errorentry>\n\n";
+
+    error_log($err, 3, __DIR__'/errors/error.log');
+
+    $redirect_errors = array(
+        E_ERROR,
+        E_CORE_ERROR,
+        E_COMPILE_ERROR
+    );
+
+    if (in_array($errno, $redirect_errors)) {
+        return 'error';
+        die;
     }
 
-    public function getDebugMode()
-    {
-        return $this->debugMode;
-    }
-
-    public function parseError($errtype, $errno, $errmsg, $filename, $linenum)
-    {
-
-        $err = "<errorentry>\n";
-        $err .= "\t<datetime>" . date("Y-m-d H:i:s (T)") . "</datetime>\n";
-        $err .= "\t<errornum>" . $errno . "</errornum>\n";
-        $err .= "\t<errortype>" . $errtype . "</errortype>\n";
-        $err .= "\t<errormsg>" . $errmsg . "</errormsg>\n";
-        $err .= "\t<scriptname>" . $filename . "</scriptname>\n";
-        $err .= "\t<scriptlinenum>" . $linenum . "</scriptlinenum>\n";
-
-        $err .= "</errorentry>\n\n";
-
-        error_log($err, 3, $this->logPath . "/error.log");
-
-    }
 }
-
-$handle = new HandleError(true, __DIR__);
-$config->setupErrors($handle);
 ```
 * if debugMode is true show errors 
 * if debugMode is false parseErro is called
@@ -126,7 +118,7 @@ $config->setupErrors($handle);
 
 The MIT License (MIT)
 
-Copyright (c) 2016
+Copyright (c) 2017
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
